@@ -8,7 +8,7 @@ Terralith uses modules in the root module to specify different stacks.  A plan c
 
 All commands are run in the Terralith root module directory.
 
-Do increase the log level add `--log-level=debug` before a sub-command.
+To increase the log level add `--log-level=debug` before a sub-command.
 
 ## list-stacks
 
