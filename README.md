@@ -63,3 +63,6 @@ To migrate an existing repository that is broken up into multiple root modules t
 
 **Note**: For any stacks which have inter-dependencies, replace the remote data source with module inputs and outputs.
 
+# But isn't -target dangerous?
+
+No!  The `-target` parameter is not dangerous, the problem with it is really that most uses of it are unprincipled, working to get around problems they created.  `terralith` uses `-target` but it uses it in a principled and structured way.  It limits what can be targeted to modules which represent stacks.
