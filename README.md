@@ -37,4 +37,4 @@ To migrate an existing repository that is broken up into multiple root modules t
 5. Execute `terralith list-stacks` and verify the output matches expectations.
 6. Use `terraform state` to move all resources into a single state file.
 
-**Note**: For any stacks which have inter-dependencies, replace the 
+**Note**: For any stacks which have inter-dependencies, replace the remote data source with module inputs and outputs.
