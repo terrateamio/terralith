@@ -1,8 +1,32 @@
 # Terralith
 
-A PoC of a tool to manage a Terralith root module.
+A PoC of a tool to manage a Terralith root module.  It is not meant for production use.
 
 Terralith uses modules in the root module to specify different stacks.  A plan can be performed against the entire root module or a list of stacks.  For each stack that is specified, `-target` is used to narrow the plan to the module.  Planning turns refresh and state locking off, enabling multiple plan operations to be executed concurrently.
+
+# Usage
+
+All commands are run in the Terralith root module directory.
+
+Do increase the log level add `--log-level=debug` before a sub-command.
+
+## list-stacks
+
+`terralith list-stacks`
+
+Outputs a list of stacks that Terralith has discovered in the root module.
+
+## plan
+
+`terralith plan [-s stack1 [-s stack2 ...]] -o /path/to/plan`
+
+Perform a plan operation and produce a plan file.  Optionally specify one or more stacks to perform the plan on.
+
+## apply
+
+`terralith apply -p path/toplan`
+
+Apply a previously created plan.
 
 # Benefits
 
@@ -38,3 +62,4 @@ To migrate an existing repository that is broken up into multiple root modules t
 6. Use `terraform state` to move all resources into a single state file.
 
 **Note**: For any stacks which have inter-dependencies, replace the remote data source with module inputs and outputs.
+
