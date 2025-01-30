@@ -1,0 +1,108 @@
+#! /usr/bin/env python
+
+import argparse
+import fnmatch
+import logging
+import os
+import re
+import subprocess
+
+
+def find_stacks():
+    stacks = []
+    for fname in os.listdir('.'):
+        if fnmatch.fnmatch(fname, '*.tf') or fnmatch.fnmatch(fname, '*.tofu'):
+            logging.debug('Evaluating %s', fname)
+            with open(fname, 'r') as f:
+                for m in re.finditer('module "([^"]+)"', f.read()):
+                    logging.debug('Adding stack: %s', m.group(1))
+                    stacks.append(m.group(1))
+
+    return stacks
+
+
+def tf_cmd():
+    return os.environ.get('TF_CMD', 'terraform')
+
+
+def do_list_stacks(args):
+    for stack in find_stacks():
+        print(stack)
+
+
+def do_plan(args):
+    if args.stack:
+        stacks = args.stack
+        targets = ['-target=module.' + s for s in stacks]
+    else:
+        targets = []
+
+    cmd = [tf_cmd(), 'plan', '-lock=false', '-refresh=false', '-out=' + args.plan] + targets
+    logging.debug('Running: %r', cmd)
+    subprocess.check_call(cmd)
+
+
+def do_apply(args):
+    cmd = [tf_cmd(), 'apply', args.plan]
+    logging.debug('Running: %r', cmd)
+    subprocess.check_call(cmd)
+
+
+def make_parser():
+    parser = argparse.ArgumentParser(
+        description='Treat a root module as multiple environments'
+    )
+
+    parser.add_argument('--log-level',
+                        help='Set the log level',
+                        default='error',
+                        choices=['debug', 'info', 'error'],
+                        type=str)
+
+    subparsers = parser.add_subparsers()
+
+    parser_list = subparsers.add_parser('list-stacks', help='List stacks')
+    parser_list.set_defaults(func=do_list_stacks)
+
+    parser_plan = subparsers.add_parser('plan', help='Plan changes')
+    parser_plan.add_argument('-s',
+                             '--stack',
+                             action='extend',
+                             nargs='+',
+                             type=str,
+                             help='Stacks to plan')
+    parser_plan.add_argument('-o',
+                             '--plan',
+                             required=True,
+                             type=str,
+                             help='File to output plan')
+    parser_plan.set_defaults(func=do_plan)
+
+    parser_apply = subparsers.add_parser('apply', help='Apply a plan')
+    parser_apply.add_argument('-p',
+                              '--plan',
+                              type=str,
+                              help='Plan file to apply')
+    parser_apply.set_defaults(func=do_apply)
+
+    return parser
+
+
+def setup_logging(level):
+    LOG_LEVELS = {
+        'debug': logging.DEBUG,
+        'info': logging.INFO,
+        'error': logging.ERROR
+    }
+    logging.basicConfig(level=LOG_LEVELS[level])
+
+
+def main():
+    parser = make_parser()
+    args = parser.parse_args()
+    setup_logging(args.log_level)
+    args.func(args)
+
+
+if __name__ == '__main__':
+    main()
